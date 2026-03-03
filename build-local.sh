@@ -62,14 +62,30 @@ fi
 print_success "Downloaded IPA icons"
 
 print_status "Downloading patcher..."
-curl -L -o patcher https://github.com/amsyarasyiq/dissonance-ipa-patcher/releases/download/release-dissonance/patcher.mac-amd64
+
+ARCH=$(uname -m)
+case "$ARCH" in
+    arm64|aarch64)
+        PATCHER_ASSET="patcher.mac-arm64"
+        ;;
+    x86_64|amd64)
+        PATCHER_ASSET="patcher.mac-amd64"
+        ;;
+    *)
+        print_error "Unsupported architecture for patcher: $ARCH"
+        exit 1
+        ;;
+esac
+
+PATCHER_URL="https://github.com/bunny-mod/ipa-patcher/releases/download/release-pyon/${PATCHER_ASSET}"
+curl -fL -o patcher "$PATCHER_URL"
 chmod +x patcher
 
 if [ $? -ne 0 ]; then
     print_error "Failed to download patcher"
     exit 1
 fi
-print_success "Downloaded patcher"
+print_success "Downloaded patcher (${PATCHER_ASSET})"
 
 print_status "Cloning Safari extension..."
 rm -rf OpenInDiscord
