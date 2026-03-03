@@ -173,7 +173,20 @@ print_success "Installed cyan"
 NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
 PACKAGE=$(grep '^Package:' control | cut -d ' ' -f 2)
 VERSION=$(grep '^Version:' control | cut -d ' ' -f 2)
-DEB_FILE="packages/${PACKAGE}_${VERSION}_iphoneos-arm.deb"
+DEB_FILE_ARM64="packages/${PACKAGE}_${VERSION}_iphoneos-arm64.deb"
+
+if [ -f "$DEB_FILE_ARM64" ]; then
+    DEB_FILE="$DEB_FILE_ARM64"
+else
+    DEB_FILE=$(find packages -maxdepth 1 -type f -name "${PACKAGE}_${VERSION}_iphoneos-*.deb" | head -n 1)
+fi
+
+if [ -z "$DEB_FILE" ] || [ ! -f "$DEB_FILE" ]; then
+    print_error "Could not find built .deb package for ${PACKAGE} ${VERSION}"
+    print_status "Available packages:"
+    ls -lah packages || true
+    exit 1
+fi
 
 print_status "Injecting tweak..."
 cyan -duwsgq -i discord-patched.ipa -o "$NAME.ipa" -f "$DEB_FILE" OpenInDiscord/build/OpenInDiscord.appex
