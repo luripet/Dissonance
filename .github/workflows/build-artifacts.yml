@@ -66,19 +66,26 @@ jobs:
             exit 1
           fi
 
-      - name: Download Discord IPA from private repository
-        env:
-          GH_TOKEN: ${{ secrets.PRIVATE_IPA_TOKEN }}
-        run: |
-          gh api \
-            -H "Accept: application/vnd.github.raw" \
-            "repos/${IPA_SOURCE_REPO}/contents/${IPA_SOURCE_PATH}?ref=${IPA_SOURCE_REF}" \
-            > discord.ipa
+      - name: Checkout IPA source repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.IPA_SOURCE_REPO }}
+          ref: ${{ env.IPA_SOURCE_REF }}
+          token: ${{ secrets.PRIVATE_IPA_TOKEN }}
+          path: ipa-source
+          fetch-depth: 1
+          lfs: true
 
-          if [ ! -s discord.ipa ]; then
-            echo "Downloaded IPA is empty."
+      - name: Copy IPA from private repository
+        run: |
+          SOURCE_IPA_PATH="$GITHUB_WORKSPACE/ipa-source/${IPA_SOURCE_PATH}"
+          if [ ! -f "$SOURCE_IPA_PATH" ]; then
+            echo "IPA file not found: $SOURCE_IPA_PATH"
             exit 1
           fi
+
+          cp "$SOURCE_IPA_PATH" "$GITHUB_WORKSPACE/discord.ipa"
+          ls -lh "$GITHUB_WORKSPACE/discord.ipa"
 
       - name: Build tweak and IPA
         run: |

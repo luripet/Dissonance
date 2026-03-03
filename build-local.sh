@@ -122,10 +122,23 @@ fi
 print_success "Built Safari extension"
 
 print_status "Patching IPA..."
-./patcher -d "$IPA_FILE" -o discord-patched.ipa -i ./ipa-icons.zip
 
-if [ $? -ne 0 ]; then
+print_status "IPA info:"
+ls -lh "$IPA_FILE"
+file "$IPA_FILE" || true
+unzip -tq "$IPA_FILE" >/dev/null 2>&1 || {
+    print_error "Input IPA is not a valid zip archive (or is incomplete)."
+    exit 1
+}
+
+set -o pipefail
+./patcher -d "$IPA_FILE" -o discord-patched.ipa -i ./ipa-icons.zip 2>&1 | tee patcher.log
+PATCH_STATUS=${PIPESTATUS[0]}
+
+if [ $PATCH_STATUS -ne 0 ]; then
     print_error "Failed to patch IPA"
+    print_error "Patcher output:"
+    cat patcher.log
     exit 1
 fi
 print_success "Patched IPA"
