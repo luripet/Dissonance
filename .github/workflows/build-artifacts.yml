@@ -8,15 +8,15 @@ on:
   workflow_dispatch:
     inputs:
       ipa_repo:
-        description: "Private repo that hosts IPA release assets (owner/repo)"
+        description: "Private repo that hosts IPA file (owner/repo)"
         required: false
         type: string
-      ipa_tag:
-        description: "Release tag to download from (e.g. v1)"
+      ipa_ref:
+        description: "Branch / tag / commit to read IPA from"
         required: false
         type: string
-      ipa_asset:
-        description: "IPA asset file name in that release"
+      ipa_path:
+        description: "IPA file path inside the repository"
         required: false
         type: string
 
@@ -24,9 +24,9 @@ jobs:
   build:
     runs-on: macos-15
     env:
-      IPA_SOURCE_REPO: ${{ github.event.inputs.ipa_repo || secrets.PRIVATE_IPA_REPO || 'luripet/DiscordIPAPrivate' }}
-      IPA_SOURCE_TAG: ${{ github.event.inputs.ipa_tag || secrets.PRIVATE_IPA_TAG || 'v1' }}
-      IPA_SOURCE_ASSET: ${{ github.event.inputs.ipa_asset || secrets.PRIVATE_IPA_ASSET || 'discord.ipa' }}
+      IPA_SOURCE_REPO: ${{ github.event.inputs.ipa_repo || secrets.PRIVATE_IPA_REPO || 'luripet/DissonaceIPA' }}
+      IPA_SOURCE_REF: ${{ github.event.inputs.ipa_ref || secrets.PRIVATE_IPA_REF || 'main' }}
+      IPA_SOURCE_PATH: ${{ github.event.inputs.ipa_path || secrets.PRIVATE_IPA_PATH || 'discord.ipa' }}
 
     steps:
       - name: Checkout code
@@ -61,19 +61,24 @@ jobs:
             exit 1
           fi
 
-          if [ -z "${IPA_SOURCE_REPO}" ] || [ -z "${IPA_SOURCE_TAG}" ] || [ -z "${IPA_SOURCE_ASSET}" ]; then
-            echo "IPA source settings are missing. Set workflow inputs or PRIVATE_IPA_REPO/PRIVATE_IPA_TAG/PRIVATE_IPA_ASSET secrets."
+          if [ -z "${IPA_SOURCE_REPO}" ] || [ -z "${IPA_SOURCE_REF}" ] || [ -z "${IPA_SOURCE_PATH}" ]; then
+            echo "IPA source settings are missing. Set workflow inputs or PRIVATE_IPA_REPO/PRIVATE_IPA_REF/PRIVATE_IPA_PATH secrets."
             exit 1
           fi
 
-      - name: Download Discord IPA from private release
+      - name: Download Discord IPA from private repository
         env:
           GH_TOKEN: ${{ secrets.PRIVATE_IPA_TOKEN }}
         run: |
-          gh release download "${IPA_SOURCE_TAG}" \
-            -R "${IPA_SOURCE_REPO}" \
-            -p "${IPA_SOURCE_ASSET}" \
-            -D .
+          gh api \
+            -H "Accept: application/vnd.github.raw" \
+            "repos/${IPA_SOURCE_REPO}/contents/${IPA_SOURCE_PATH}?ref=${IPA_SOURCE_REF}" \
+            > discord.ipa
+
+          if [ ! -s discord.ipa ]; then
+            echo "Downloaded IPA is empty."
+            exit 1
+          fi
 
       - name: Build tweak and IPA
         run: |
