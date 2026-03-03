@@ -20,8 +20,12 @@ print_error() {
 IPA_FILE=$(find . -maxdepth 1 -name "*.ipa" -print -quit)
 
 if [ -z "$IPA_FILE" ]; then
-    print_status "No IPA found. Please enter Discord IPA URL:"
-    read DISCORD_URL
+    if [ -n "$DISCORD_URL" ]; then
+        print_status "No IPA found. Using DISCORD_URL from environment."
+    else
+        print_status "No IPA found. Please enter Discord IPA URL:"
+        read DISCORD_URL
+    fi
     
     if [ -z "$DISCORD_URL" ]; then
         print_error "No URL provided"

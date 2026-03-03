@@ -1,0 +1,76 @@
+name: Build Artifacts
+
+on:
+  push:
+    branches: [main, dev]
+    paths-ignore:
+      - "**/*.md"
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: "Direct link to decrypted Discord IPA"
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: macos-15
+    env:
+      DISCORD_IPA_URL: ${{ github.event.inputs.ipa_url || secrets.DISCORD_IPA_URL }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Check cache key
+        run: |
+          echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
+
+      - name: Use cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/theos
+          key: ${{ runner.os }}-${{ env.upstream_heads }}
+
+      - name: Prepare Theos
+        uses: Randomblock1/theos-action@v1
+
+      - name: Set GNU Make path
+        run: |
+          echo "PATH=$(brew --prefix make)/libexec/gnubin:$PATH" >> $GITHUB_ENV
+
+      - name: Validate IPA URL
+        run: |
+          if [ -z "${DISCORD_IPA_URL}" ]; then
+            echo "DISCORD_IPA_URL secret (or workflow input ipa_url) is required."
+            exit 1
+          fi
+
+      - name: Build tweak and IPA
+        env:
+          DISCORD_URL: ${{ env.DISCORD_IPA_URL }}
+        run: |
+          chmod +x ./build-local.sh
+          ./build-local.sh
+
+      - name: Extract app name
+        run: |
+          APP_NAME=$(grep '^Name:' control | cut -d ' ' -f 2)
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: Upload deb artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: deb-packages
+          path: packages/*.deb
+          if-no-files-found: error
+
+      - name: Upload ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ipa
+          path: ${{ env.APP_NAME }}.ipa
+          if-no-files-found: error
