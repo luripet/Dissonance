@@ -53,12 +53,17 @@ fi
 print_success "Built tweak"
 
 print_status "Downloading IPA icons..."
-curl -L -o ipa-icons.zip https://raw.githubusercontent.com/dissonance/assets/main/ipa-icons.zip
+curl -fL -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
 
 if [ $? -ne 0 ]; then
     print_error "Failed to download IPA icons"
     exit 1
 fi
+
+unzip -tq ipa-icons.zip >/dev/null 2>&1 || {
+    print_error "Downloaded ipa-icons.zip is invalid."
+    exit 1
+}
 print_success "Downloaded IPA icons"
 
 print_status "Downloading patcher..."
@@ -132,7 +137,9 @@ unzip -tq "$IPA_FILE" >/dev/null 2>&1 || {
 }
 
 set -o pipefail
-./patcher -d "$IPA_FILE" -o discord-patched.ipa -i ./ipa-icons.zip 2>&1 | tee patcher.log
+./patcher -d "$IPA_FILE" -o discord-patched.ipa -i ./ipa-icons.zip 2>&1 \
+    | sed -e 's/PyonPatcher/DissonancePatcher/g' -e 's/Bunny/Dissonance/g' \
+    | tee patcher.log
 PATCH_STATUS=${PIPESTATUS[0]}
 
 if [ $PATCH_STATUS -ne 0 ]; then
@@ -142,6 +149,15 @@ if [ $PATCH_STATUS -ne 0 ]; then
     exit 1
 fi
 print_success "Patched IPA"
+
+print_status "Applying final Dissonance branding..."
+PATCH_TMP=$(mktemp -d)
+unzip -q discord-patched.ipa -d "$PATCH_TMP"
+PLIST_PATH="$PATCH_TMP/Payload/Discord.app/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleName Dissonance" "$PLIST_PATH"
+/usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Dissonance" "$PLIST_PATH"
+(cd "$PATCH_TMP" && zip -qr "$OLDPWD/discord-patched.ipa" Payload)
+rm -rf "$PATCH_TMP"
 
 print_status "Setting up Python environment..."
 python3 -m venv venv
