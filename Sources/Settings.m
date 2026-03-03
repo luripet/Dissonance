@@ -4,12 +4,12 @@
 #import "Utils.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
-@implementation BunnySettingsViewController
+@implementation DissonanceSettingsViewController
 
 - (instancetype)initWithVersion:(NSString *)version {
     self = [super init];
     if (self) {
-        self.title = [NSString stringWithFormat:@"Bunny v%@ Recovery Menu", version];
+        self.title = [NSString stringWithFormat:@"Dissonance v%@ Recovery Menu", version];
     }
     return self;
 }
@@ -177,7 +177,7 @@
 
 - (void)openDocumentsDirectory {
     if (isJailbroken) {
-        NSString *filzaPath = [NSString stringWithFormat:@"filza://view%@", getPyoncordDirectory().path];
+        NSString *filzaPath = [NSString stringWithFormat:@"filza://view%@", getDissonanceDirectory().path];
         NSURL *filzaURL = [NSURL URLWithString:[filzaPath stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
         
         if ([[UIApplication sharedApplication] canOpenURL:filzaURL]) {
@@ -227,7 +227,7 @@
                                                                      URLQueryAllowedCharacterSet]];
 
     NSString *urlString = [NSString
-        stringWithFormat:@"https://github.com/bunny-mod/BunnyTweak/issues/new?title=%@&body=%@",
+        stringWithFormat:@"https://github.com/luripet/DissonanceBuilds/issues/new?title=%@&body=%@",
                          encodedTitle, encodedBody];
     NSURL *url          = [NSURL URLWithString:urlString];
     [[UIApplication sharedApplication] openURL:url options:@{} completionHandler:nil];
@@ -338,8 +338,8 @@
 }
 
 void showSettingsSheet(void) {
-    BunnySettingsViewController *settingsVC =
-        [[BunnySettingsViewController alloc] initWithVersion:PACKAGE_VERSION];
+    DissonanceSettingsViewController *settingsVC =
+        [[DissonanceSettingsViewController alloc] initWithVersion:PACKAGE_VERSION];
 
     UINavigationController *navController =
         [[UINavigationController alloc] initWithRootViewController:settingsVC];

@@ -1,4 +1,4 @@
-globalThis.__PYON_LOADER__ = {
+globalThis.__DISSONANCE_LOADER__ = {
     loaderName: "@TWEAK_NAME@",
     loaderVersion: "@PACKAGE_VERSION@",
     hasThemeSupport: true,

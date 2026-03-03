@@ -9,21 +9,21 @@ extern id gBridge;
 
 BOOL isJailbroken = NO;
 
-NSURL *getPyoncordDirectory(void) {
+NSURL *getDissonanceDirectory(void) {
     NSFileManager *fileManager  = [NSFileManager defaultManager];
     NSURL *documentDirectoryURL = [[fileManager URLsForDirectory:NSDocumentDirectory
                                                        inDomains:NSUserDomainMask] lastObject];
 
-    NSURL *pyoncordFolderURL = [documentDirectoryURL URLByAppendingPathComponent:@"pyoncord"];
+    NSURL *dissonanceFolderURL = [documentDirectoryURL URLByAppendingPathComponent:@"dissonance"];
 
-    if (![fileManager fileExistsAtPath:pyoncordFolderURL.path]) {
-        [fileManager createDirectoryAtURL:pyoncordFolderURL
+    if (![fileManager fileExistsAtPath:dissonanceFolderURL.path]) {
+        [fileManager createDirectoryAtURL:dissonanceFolderURL
               withIntermediateDirectories:YES
                                attributes:nil
                                     error:nil];
     }
 
-    return pyoncordFolderURL;
+    return dissonanceFolderURL;
 }
 
 UIColor *hexToUIColor(NSString *hex) {
@@ -121,18 +121,18 @@ void loadCustomBundleFromURL(NSURL *url, UIViewController *viewController) {
 
 void deletePlugins(void) {
     [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"plugins"]
+        removeItemAtURL:[getDissonanceDirectory() URLByAppendingPathComponent:@"plugins"]
                   error:nil];
 }
 
 void deleteThemes(void) {
     [[NSFileManager defaultManager]
-        removeItemAtURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"themes"]
+        removeItemAtURL:[getDissonanceDirectory() URLByAppendingPathComponent:@"themes"]
                   error:nil];
 }
 
 void deleteAllData(UIViewController *presenter) {
-    [[NSFileManager defaultManager] removeItemAtURL:getPyoncordDirectory() error:nil];
+    [[NSFileManager defaultManager] removeItemAtURL:getDissonanceDirectory() error:nil];
     gracefulExit(presenter);
 }
 
@@ -156,7 +156,7 @@ void setCustomBundleURL(NSURL *url, UIViewController *presenter) {
 void resetCustomBundleURL(UIViewController *presenter) {
     LoaderConfig *config        = [LoaderConfig getLoaderConfig];
     config.customLoadUrlEnabled = NO;
-    config.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/bunny.js"];
+    config.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/dissonance.js"];
     [config saveConfig];
     removeCachedBundle();
     gracefulExit(presenter);
@@ -168,7 +168,7 @@ BOOL isSafeModeEnabled(void) {
                                                inDomains:NSUserDomainMask]
             .lastObject;
     NSURL *settingsURL =
-        [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/VENDETTA_SETTINGS"];
+        [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/DISSONANCE_SETTINGS"];
 
     NSData *data = [NSData dataWithContentsOfURL:settingsURL];
     if (!data)
@@ -188,8 +188,8 @@ void toggleSafeMode(void) {
                                                inDomains:NSUserDomainMask]
             .lastObject;
     NSURL *settingsURL =
-        [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/VENDETTA_SETTINGS"];
-    NSURL *themeURL = [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/VENDETTA_THEMES"];
+        [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/DISSONANCE_SETTINGS"];
+    NSURL *themeURL = [documentDirectoryURL URLByAppendingPathComponent:@"vd_mmkv/DISSONANCE_THEMES"];
 
     NSData *data                  = [NSData dataWithContentsOfURL:settingsURL];
     NSMutableDictionary *settings = nil;
@@ -238,7 +238,7 @@ static void showCommitsForBranch(NSString *branch, UIViewController *presenter,
                                  NSURLSession *session);
 
 void showBundleSelector(UIViewController *presenter) {
-    BunnyLog(@"Starting bundle selector...");
+    DissonanceLog(@"Starting bundle selector...");
 
     UIAlertController *loadingAlert =
         [UIAlertController alertControllerWithTitle:@"Loading"
@@ -246,11 +246,11 @@ void showBundleSelector(UIViewController *presenter) {
                                      preferredStyle:UIAlertControllerStyleAlert];
     [presenter presentViewController:loadingAlert animated:YES completion:nil];
 
-    NSURL *url = [NSURL URLWithString:@"https://api.github.com/repos/bunny-mod/builds/branches"];
+    NSURL *url = [NSURL URLWithString:@"https://api.github.com/repos/luripet/DissonanceBuilds/branches"];
     NSURLSession *session = [NSURLSession
         sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration]];
 
-    BunnyLog(@"Fetching branches from: %@", url);
+    DissonanceLog(@"Fetching branches from: %@", url);
 
     [[session
           dataTaskWithURL:url
@@ -314,7 +314,7 @@ void showBundleSelector(UIViewController *presenter) {
 
 static void showCommitsForBranch(NSString *branch, UIViewController *presenter,
                                  NSURLSession *session) {
-    BunnyLog(@"Fetching commits for branch: %@", branch);
+    DissonanceLog(@"Fetching commits for branch: %@", branch);
 
     UIAlertController *loadingCommits =
         [UIAlertController alertControllerWithTitle:@"Loading"
@@ -324,7 +324,7 @@ static void showCommitsForBranch(NSString *branch, UIViewController *presenter,
 
     NSString *commitsUrl = [NSString
         stringWithFormat:
-            @"https://api.github.com/repos/bunny-mod/builds/commits?sha=%@&per_page=10", branch];
+            @"https://api.github.com/repos/luripet/DissonanceBuilds/commits?sha=%@&per_page=10", branch];
     NSURL *commitsURL    = [NSURL URLWithString:commitsUrl];
 
     [[session
@@ -394,9 +394,9 @@ static void showCommitsForBranch(NSString *branch, UIViewController *presenter,
                                                                                    @"raw."
                                                                                    @"githubusercont"
                                                                                    @"ent.com/"
-                                                                                   @"bunny-mod/"
-                                                                                   @"builds/%@/"
-                                                                                   @"bunny.min.js",
+                                                                                   @"luripet/"
+                                                                                   @"DissonanceBuilds/%@/"
+                                                                                   @"dissonance.min.js",
                                                                                    sha];
                                                                        NSURL *url = [NSURL
                                                                            URLWithString:bundleUrl];
@@ -422,11 +422,11 @@ static void showCommitsForBranch(NSString *branch, UIViewController *presenter,
 }
 
 void removeCachedBundle(void) {
-    NSURL *bundleURL = [getPyoncordDirectory() URLByAppendingPathComponent:@"bundle.js"];
+    NSURL *bundleURL = [getDissonanceDirectory() URLByAppendingPathComponent:@"bundle.js"];
     NSError *error   = nil;
     [[NSFileManager defaultManager] removeItemAtURL:bundleURL error:&error];
     if (error) {
-        BunnyLog(@"Failed to remove cached bundle: %@", error);
+        DissonanceLog(@"Failed to remove cached bundle: %@", error);
     }
 }
 

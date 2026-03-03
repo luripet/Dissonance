@@ -5,13 +5,13 @@
 >
 > We want to thank all contributors and users for their support over the project's lifetime. While development has ceased, the code remains available for those who may find it useful.
 >
-> If you want to fork, redistribute, or continue development of this project (BunnyTweak), read [Important Clarification Regarding Licensing](#important-clarification-regarding-licensing) to understand your rights and the actual applicable license.
+> If you want to fork, redistribute, or continue development of this project (DissonanceTweak), read [Important Clarification Regarding Licensing](#important-clarification-regarding-licensing) to understand your rights and the actual applicable license.
 
-# BunnyTweak
+# DissonanceTweak
 
 ![screenshot](https://adriancastro.dev/c6wkhfl0rq1f.PNG)
 
-Tweak to inject [Bunny](https://github.com/pyoncord/Bunny) and [OpenInDiscord](https://github.com/castdrian/OpenInDiscord) into Discord. Forked from [VendettaTweak](https://github.com/vendetta-mod/VendettaTweak) and modified to match with [BunnyXposed](https://github.com/pyoncord/BunnyXposed)'s behavior.
+Tweak to inject [Dissonance](https://github.com/dissonance/Dissonance) and [OpenInDiscord](https://github.com/castdrian/OpenInDiscord) into Discord. Forked from [DissonanceBuilds](https://github.com/luripet/DissonanceBuilds) and modified to match with [DissonanceXposed](https://github.com/dissonance/DissonanceXposed)'s behavior.
 
 > [!WARNING]
 > When sideloading with an ADP account cert, some functionality will break. If you value these features, sideload with a local development certificate instead. There is a workaround available that fixes one of the issues. See below for details.
@@ -47,7 +47,7 @@ To resolve the fixable issue, you need to match the app's bundle ID with your pr
 
 ## Installation
 
-Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/releases/latest) tab.
+There are currently no published releases. Build from source using the instructions below.
 
 > [!NOTE]
 > Decrypted IPAs are sourced from the [Enmity](https://github.com/enmity-mod/) community. These are also used throughout Enmity related projects such as [enmity-mod/tweak](https://github.com/enmity-mod/tweak/) and [acquitelol/rosiecord](https://github.com/acquitelol/rosiecord).\
@@ -67,7 +67,7 @@ Builds can be found in the [Releases](https://github.com/pyoncord/BunnyTweak/rel
 > [!NOTE]
 > TrollStore may display an encryption warning, which you can disregard.
 
-- Download and install [Bunny.ipa](https://github.com/pyoncord/BunnyTweak/releases/latest/download/Bunny.ipa) using your preferred sideloading method.
+- There is currently no published `Dissonance.ipa`; build and sign your own package.
 
 ## Building
 
@@ -96,7 +96,7 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/theos/theos/master/bin/i
 
 If you've already installed theos, you can run `$THEOS/bin/update-theos` to make sure it's up to date.
 
-5. Clone this repository via `git clone git@github.com:pyoncord/BunnyTweak.git` and `cd` into it.
+5. Clone this repository via `git clone git@github.com:dissonance/DissonanceTweak.git` and `cd` into it.
 
 6. To build, you can run `make package`.
 
@@ -106,7 +106,7 @@ The resulting `.deb` file will be in the `packages` folder.
 
 ## Contributors
 
-[![Contributors](https://contrib.rocks/image?repo=bunny-mod/BunnyTweak)](https://github.com/bunny-mod/BunnyTweak/graphs/contributors)
+[![Contributors](https://contrib.rocks/image?repo=luripet/DissonanceBuilds)](https://github.com/luripet/DissonanceBuilds/graphs/contributors)
 
 ## Important Clarification Regarding Licensing
 

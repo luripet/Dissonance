@@ -8,14 +8,14 @@
     self = [super init];
     if (self) {
         self.customLoadUrlEnabled = NO;
-        self.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/bunny.js"];
+        self.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/dissonance.js"];
     }
     return self;
 }
 
 - (BOOL)loadConfig {
-    NSURL *loaderConfigUrl = [getPyoncordDirectory() URLByAppendingPathComponent:@"loader.json"];
-    BunnyLog(@"Attempting to load config from: %@", loaderConfigUrl.path);
+    NSURL *loaderConfigUrl = [getDissonanceDirectory() URLByAppendingPathComponent:@"loader.json"];
+    DissonanceLog(@"Attempting to load config from: %@", loaderConfigUrl.path);
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:loaderConfigUrl.path]) {
         NSError *error     = nil;
@@ -23,7 +23,7 @@
         NSDictionary *json = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
 
         if (error) {
-            BunnyLog(@"Error parsing loader config: %@", error);
+            DissonanceLog(@"Error parsing loader config: %@", error);
             return NO;
         }
 
@@ -37,28 +37,28 @@
                 }
             }
 
-            BunnyLog(@"Loader config loaded - Custom URL %@: %@",
+            DissonanceLog(@"Loader config loaded - Custom URL %@: %@",
                      self.customLoadUrlEnabled ? @"enabled" : @"disabled",
                      self.customLoadUrl.absoluteString);
             return YES;
         }
     }
 
-    BunnyLog(@"Using default loader config: %@", self.customLoadUrl.absoluteString);
+    DissonanceLog(@"Using default loader config: %@", self.customLoadUrl.absoluteString);
     return NO;
 }
 
 + (instancetype)defaultConfig {
     LoaderConfig *config        = [[LoaderConfig alloc] init];
     config.customLoadUrlEnabled = NO;
-    config.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/bunny.js"];
+    config.customLoadUrl        = [NSURL URLWithString:@"http://localhost:4040/dissonance.js"];
     return config;
 }
 
 + (instancetype)getLoaderConfig {
-    BunnyLog(@"Getting loader config");
+    DissonanceLog(@"Getting loader config");
 
-    NSURL *loaderConfigUrl = [getPyoncordDirectory() URLByAppendingPathComponent:@"loader.json"];
+    NSURL *loaderConfigUrl = [getDissonanceDirectory() URLByAppendingPathComponent:@"loader.json"];
 
     if ([[NSFileManager defaultManager] fileExistsAtPath:loaderConfigUrl.path]) {
         NSError *error     = nil;
@@ -79,12 +79,12 @@
         }
     }
 
-    BunnyLog(@"Couldn't get loader config");
+    DissonanceLog(@"Couldn't get loader config");
     return [LoaderConfig defaultConfig];
 }
 
 - (BOOL)saveConfig {
-    NSURL *loaderConfigUrl = [getPyoncordDirectory() URLByAppendingPathComponent:@"loader.json"];
+    NSURL *loaderConfigUrl = [getDissonanceDirectory() URLByAppendingPathComponent:@"loader.json"];
     NSDictionary *json     = @{
         @"customLoadUrl" :
             @{@"enabled" : @(self.customLoadUrlEnabled), @"url" : self.customLoadUrl.absoluteString}

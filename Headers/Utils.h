@@ -1,11 +1,11 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@class BunnySettingsViewController;
+@class DissonanceSettingsViewController;
 
 extern BOOL isJailbroken;
 BOOL        isSafeModeEnabled(void);
-NSURL      *getPyoncordDirectory(void);
+NSURL      *getDissonanceDirectory(void);
 UIColor    *hexToUIColor(NSString *hex);
 NSString   *getDeviceIdentifier(void);
 void        showErrorAlert(NSString *title, NSString *message, void (^completion)(void));

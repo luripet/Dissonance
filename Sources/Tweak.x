@@ -9,8 +9,8 @@
 #import "Utils.h"
 
 static NSURL         *source;
-static NSString      *bunnyPatchesBundlePath;
-static NSURL         *pyoncordDirectory;
+static NSString      *dissonancePatchesBundlePath;
+static NSURL         *dissonanceDirectory;
 static LoaderConfig  *loaderConfig;
 static NSTimeInterval shakeStartTime = 0;
 static BOOL           isShaking      = NO;
@@ -26,32 +26,32 @@ id                    gBridge        = nil;
     }
 
     gBridge = self;
-    BunnyLog(@"Stored bridge reference: %@", gBridge);
+    DissonanceLog(@"Stored bridge reference: %@", gBridge);
 
-    NSBundle *bunnyPatchesBundle = [NSBundle bundleWithPath:bunnyPatchesBundlePath];
-    if (!bunnyPatchesBundle)
+    NSBundle *dissonancePatchesBundle = [NSBundle bundleWithPath:dissonancePatchesBundlePath];
+    if (!dissonancePatchesBundle)
     {
-        BunnyLog(@"Failed to load BunnyPatches bundle from path: %@", bunnyPatchesBundlePath);
+        DissonanceLog(@"Failed to load DissonancePatches bundle from path: %@", dissonancePatchesBundlePath);
         showErrorAlert(@"Loader Error",
                        @"Failed to initialize mod loader. Please reinstall the tweak.", nil);
         return %orig;
     }
 
-    NSURL *patchPath = [bunnyPatchesBundle URLForResource:@"payload-base" withExtension:@"js"];
+    NSURL *patchPath = [dissonancePatchesBundle URLForResource:@"payload-base" withExtension:@"js"];
     if (!patchPath)
     {
-        BunnyLog(@"Failed to find payload-base.js in bundle");
+        DissonanceLog(@"Failed to find payload-base.js in bundle");
         showErrorAlert(@"Loader Error",
                        @"Failed to initialize mod loader. Please reinstall the tweak.", nil);
         return %orig;
     }
 
     NSData *patchData = [NSData dataWithContentsOfURL:patchPath];
-    BunnyLog(@"Injecting loader");
+    DissonanceLog(@"Injecting loader");
     %orig(patchData, source, YES);
 
     __block NSData *bundle =
-        [NSData dataWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"bundle.js"]];
+        [NSData dataWithContentsOfURL:[dissonanceDirectory URLByAppendingPathComponent:@"bundle.js"]];
 
     dispatch_group_t group = dispatch_group_create();
     dispatch_group_enter(group);
@@ -60,13 +60,13 @@ id                    gBridge        = nil;
     if (loaderConfig.customLoadUrlEnabled && loaderConfig.customLoadUrl)
     {
         bundleUrl = loaderConfig.customLoadUrl;
-        BunnyLog(@"Using custom load URL: %@", bundleUrl.absoluteString);
+        DissonanceLog(@"Using custom load URL: %@", bundleUrl.absoluteString);
     }
     else
     {
         bundleUrl = [NSURL
-            URLWithString:@"https://raw.githubusercontent.com/bunny-mod/builds/main/bunny.min.js"];
-        BunnyLog(@"Using default bundle URL: %@", bundleUrl.absoluteString);
+            URLWithString:@"https://raw.githubusercontent.com/luripet/DissonanceBuilds/main/dissonance.min.js"];
+        DissonanceLog(@"Using default bundle URL: %@", bundleUrl.absoluteString);
     }
 
     NSMutableURLRequest *bundleRequest =
@@ -75,7 +75,7 @@ id                    gBridge        = nil;
                             timeoutInterval:3.0];
 
     NSString *bundleEtag = [NSString
-        stringWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"etag.txt"]
+        stringWithContentsOfURL:[dissonanceDirectory URLByAppendingPathComponent:@"etag.txt"]
                        encoding:NSUTF8StringEncoding
                           error:nil];
     if (bundleEtag && bundle)
@@ -95,14 +95,14 @@ id                    gBridge        = nil;
                   {
                       bundle = data;
                       [bundle
-                          writeToURL:[pyoncordDirectory URLByAppendingPathComponent:@"bundle.js"]
+                          writeToURL:[dissonanceDirectory URLByAppendingPathComponent:@"bundle.js"]
                           atomically:YES];
 
                       NSString *etag = [httpResponse.allHeaderFields objectForKey:@"Etag"];
                       if (etag)
                       {
                           [etag
-                              writeToURL:[pyoncordDirectory URLByAppendingPathComponent:@"etag.txt"]
+                              writeToURL:[dissonanceDirectory URLByAppendingPathComponent:@"etag.txt"]
                               atomically:YES
                                 encoding:NSUTF8StringEncoding
                                    error:nil];
@@ -115,7 +115,7 @@ id                    gBridge        = nil;
     dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
 
     NSData *themeData =
-        [NSData dataWithContentsOfURL:[pyoncordDirectory
+        [NSData dataWithContentsOfURL:[dissonanceDirectory
                                           URLByAppendingPathComponent:@"current-theme.json"]];
     if (themeData)
     {
@@ -125,36 +125,36 @@ id                    gBridge        = nil;
                                                                     error:&jsonError];
         if (!jsonError)
         {
-            BunnyLog(@"Loading theme data...");
+            DissonanceLog(@"Loading theme data...");
             if (themeDict[@"data"])
             {
                 NSDictionary *data = themeDict[@"data"];
                 if (data[@"semanticColors"] && data[@"rawColors"])
                 {
-                    BunnyLog(@"Initializing theme colors from theme data");
+                    DissonanceLog(@"Initializing theme colors from theme data");
                     initializeThemeColors(data[@"semanticColors"], data[@"rawColors"]);
                 }
             }
 
             NSString *jsCode =
-                [NSString stringWithFormat:@"globalThis.__PYON_LOADER__.storedTheme=%@",
+                [NSString stringWithFormat:@"globalThis.__DISSONANCE_LOADER__.storedTheme=%@",
                                            [[NSString alloc] initWithData:themeData
                                                                  encoding:NSUTF8StringEncoding]];
             %orig([jsCode dataUsingEncoding:NSUTF8StringEncoding], source, async);
         }
         else
         {
-            BunnyLog(@"Error parsing theme JSON: %@", jsonError);
+            DissonanceLog(@"Error parsing theme JSON: %@", jsonError);
         }
     }
     else
     {
-        BunnyLog(@"No theme data found at path: %@",
-                 [pyoncordDirectory URLByAppendingPathComponent:@"current-theme.json"]);
+        DissonanceLog(@"No theme data found at path: %@",
+                 [dissonanceDirectory URLByAppendingPathComponent:@"current-theme.json"]);
     }
 
     NSData *fontData = [NSData
-        dataWithContentsOfURL:[pyoncordDirectory URLByAppendingPathComponent:@"fonts.json"]];
+        dataWithContentsOfURL:[dissonanceDirectory URLByAppendingPathComponent:@"fonts.json"]];
     if (fontData)
     {
         NSError      *jsonError;
@@ -163,18 +163,18 @@ id                    gBridge        = nil;
                                                                    error:&jsonError];
         if (!jsonError && fontDict[@"main"])
         {
-            BunnyLog(@"Found font configuration, applying...");
+            DissonanceLog(@"Found font configuration, applying...");
             patchFonts(fontDict[@"main"], fontDict[@"name"]);
         }
     }
 
     if (bundle)
     {
-        BunnyLog(@"Executing JS bundle");
+        DissonanceLog(@"Executing JS bundle");
         %orig(bundle, source, async);
     }
 
-    NSURL *preloadsDirectory = [pyoncordDirectory URLByAppendingPathComponent:@"preloads"];
+    NSURL *preloadsDirectory = [dissonanceDirectory URLByAppendingPathComponent:@"preloads"];
     if ([[NSFileManager defaultManager] fileExistsAtPath:preloadsDirectory.path])
     {
         NSError *error = nil;
@@ -189,7 +189,7 @@ id                    gBridge        = nil;
             {
                 if ([[fileURL pathExtension] isEqualToString:@"js"])
                 {
-                    BunnyLog(@"Executing preload JS file %@", fileURL.absoluteString);
+                    DissonanceLog(@"Executing preload JS file %@", fileURL.absoluteString);
                     NSData *data = [NSData dataWithContentsOfURL:fileURL];
                     if (data)
                     {
@@ -200,7 +200,7 @@ id                    gBridge        = nil;
         }
         else
         {
-            BunnyLog(@"Error reading contents of preloads directory");
+            DissonanceLog(@"Error reading contents of preloads directory");
         }
     }
 
@@ -243,42 +243,42 @@ id                    gBridge        = nil;
 {
     @autoreleasepool
     {
-        source = [NSURL URLWithString:@"bunny"];
+        source = [NSURL URLWithString:@"dissonance"];
 
         NSString *install_prefix = @"/var/jb";
         isJailbroken             = [[NSFileManager defaultManager] fileExistsAtPath:install_prefix];
 
         NSString *bundlePath =
-            [NSString stringWithFormat:@"%@/Library/Application Support/BunnyResources.bundle",
+            [NSString stringWithFormat:@"%@/Library/Application Support/DissonanceResources.bundle",
                                        install_prefix];
-        BunnyLog(@"Is jailbroken: %d", isJailbroken);
-        BunnyLog(@"Bundle path for jailbroken: %@", bundlePath);
+        DissonanceLog(@"Is jailbroken: %d", isJailbroken);
+        DissonanceLog(@"Bundle path for jailbroken: %@", bundlePath);
 
         NSString *jailedPath = [[NSBundle mainBundle].bundleURL.path
-            stringByAppendingPathComponent:@"BunnyResources.bundle"];
-        BunnyLog(@"Bundle path for jailed: %@", jailedPath);
+            stringByAppendingPathComponent:@"DissonanceResources.bundle"];
+        DissonanceLog(@"Bundle path for jailed: %@", jailedPath);
 
-        bunnyPatchesBundlePath = isJailbroken ? bundlePath : jailedPath;
-        BunnyLog(@"Selected bundle path: %@", bunnyPatchesBundlePath);
+        dissonancePatchesBundlePath = isJailbroken ? bundlePath : jailedPath;
+        DissonanceLog(@"Selected bundle path: %@", dissonancePatchesBundlePath);
 
         BOOL bundleExists =
-            [[NSFileManager defaultManager] fileExistsAtPath:bunnyPatchesBundlePath];
-        BunnyLog(@"Bundle exists at path: %d", bundleExists);
+            [[NSFileManager defaultManager] fileExistsAtPath:dissonancePatchesBundlePath];
+        DissonanceLog(@"Bundle exists at path: %d", bundleExists);
 
         NSError *error = nil;
         NSArray *bundleContents =
-            [[NSFileManager defaultManager] contentsOfDirectoryAtPath:bunnyPatchesBundlePath
+            [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dissonancePatchesBundlePath
                                                                 error:&error];
         if (error)
         {
-            BunnyLog(@"Error listing bundle contents: %@", error);
+            DissonanceLog(@"Error listing bundle contents: %@", error);
         }
         else
         {
-            BunnyLog(@"Bundle contents: %@", bundleContents);
+            DissonanceLog(@"Bundle contents: %@", bundleContents);
         }
 
-        pyoncordDirectory = getPyoncordDirectory();
+        dissonanceDirectory = getDissonanceDirectory();
         loaderConfig      = [[LoaderConfig alloc] init];
         [loaderConfig loadConfig];
 

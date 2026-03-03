@@ -72,32 +72,32 @@ NSMutableDictionary<NSString *, NSString *> *fontMap;
 
 void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontDefName)
 {
-    BunnyLog(@"patchFonts called with fonts: %@ and def name: %@", mainFonts, fontDefName);
+    DissonanceLog(@"patchFonts called with fonts: %@ and def name: %@", mainFonts, fontDefName);
 
     if (!fontMap)
     {
-        BunnyLog(@"Creating new fontMap");
+        DissonanceLog(@"Creating new fontMap");
         fontMap = [NSMutableDictionary dictionary];
     }
 
     NSString *fontJson = [NSString
-        stringWithContentsOfURL:[getPyoncordDirectory() URLByAppendingPathComponent:@"fonts.json"]
+        stringWithContentsOfURL:[getDissonanceDirectory() URLByAppendingPathComponent:@"fonts.json"]
                        encoding:NSUTF8StringEncoding
                           error:nil];
     if (fontJson)
     {
-        BunnyLog(@"Found existing fonts.json: %@", fontJson);
+        DissonanceLog(@"Found existing fonts.json: %@", fontJson);
     }
 
     for (NSString *fontName in mainFonts)
     {
         NSString *url = mainFonts[fontName];
-        BunnyLog(@"Replacing font %@ with URL: %@", fontName, url);
+        DissonanceLog(@"Replacing font %@ with URL: %@", fontName, url);
 
         NSURL    *fontURL       = [NSURL URLWithString:url];
         NSString *fontExtension = fontURL.pathExtension;
 
-        NSURL *fontCachePath = [[[getPyoncordDirectory() URLByAppendingPathComponent:@"downloads"
+        NSURL *fontCachePath = [[[getDissonanceDirectory() URLByAppendingPathComponent:@"downloads"
                                                                          isDirectory:YES]
             URLByAppendingPathComponent:@"fonts"
                             isDirectory:YES] URLByAppendingPathComponent:fontDefName
@@ -110,7 +110,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
         NSURL *parentDir = [fontCachePath URLByDeletingLastPathComponent];
         if (![[NSFileManager defaultManager] fileExistsAtPath:parentDir.path])
         {
-            BunnyLog(@"Creating parent directory: %@", parentDir.path);
+            DissonanceLog(@"Creating parent directory: %@", parentDir.path);
             [[NSFileManager defaultManager] createDirectoryAtURL:parentDir
                                      withIntermediateDirectories:YES
                                                       attributes:nil
@@ -119,11 +119,11 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
 
         if (![[NSFileManager defaultManager] fileExistsAtPath:fontCachePath.path])
         {
-            BunnyLog(@"Downloading font %@ from %@", fontName, url);
+            DissonanceLog(@"Downloading font %@ from %@", fontName, url);
             NSData *data = [NSData dataWithContentsOfURL:fontURL];
             if (data)
             {
-                BunnyLog(@"Writing font data to: %@", fontCachePath.path);
+                DissonanceLog(@"Writing font data to: %@", fontCachePath.path);
                 [data writeToURL:fontCachePath atomically:YES];
             }
         }
@@ -131,7 +131,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
         NSData *fontData = [NSData dataWithContentsOfURL:fontCachePath];
         if (fontData)
         {
-            BunnyLog(@"Registering font %@ with provider", fontName);
+            DissonanceLog(@"Registering font %@ with provider", fontName);
             CGDataProviderRef provider =
                 CGDataProviderCreateWithCFData((__bridge CFDataRef) fontData);
             CGFontRef font = CGFontCreateWithDataProvider(provider);
@@ -146,7 +146,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
                     CFErrorRef unregisterError = NULL;
                     if (!CTFontManagerUnregisterGraphicsFont(font, &unregisterError))
                     {
-                        BunnyLog(@"Failed to deregister font %@: %@",
+                        DissonanceLog(@"Failed to deregister font %@: %@",
                                  (__bridge NSString *) postScriptName,
                                  unregisterError
                                      ? (__bridge NSString *) CFErrorCopyDescription(unregisterError)
@@ -161,7 +161,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
                 if (CTFontManagerRegisterGraphicsFont(font, &error))
                 {
                     fontMap[fontName] = (__bridge NSString *) postScriptName;
-                    BunnyLog(@"Successfully registered font %@ to %@", fontName,
+                    DissonanceLog(@"Successfully registered font %@ to %@", fontName,
                              (__bridge NSString *) postScriptName);
 
                     NSError *jsonError;
@@ -170,7 +170,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
                                                                          error:&jsonError];
                     if (!jsonError)
                     {
-                        [jsonData writeToURL:[getPyoncordDirectory()
+                        [jsonData writeToURL:[getDissonanceDirectory()
                                                  URLByAppendingPathComponent:@"fontMap.json"]
                                   atomically:YES];
                     }
@@ -180,7 +180,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
                     NSString *errorDesc = error
                                               ? (__bridge NSString *) CFErrorCopyDescription(error)
                                               : @"Unknown error";
-                    BunnyLog(@"Failed to register font %@: %@", fontName, errorDesc);
+                    DissonanceLog(@"Failed to register font %@: %@", fontName, errorDesc);
                     if (error)
                         CFRelease(error);
                 }
@@ -198,7 +198,7 @@ void patchFonts(NSDictionary<NSString *, NSString *> *mainFonts, NSString *fontD
     @autoreleasepool
     {
         fontMap = [NSMutableDictionary dictionary];
-        BunnyLog(@"Font hooks initialized");
+        DissonanceLog(@"Font hooks initialized");
         %init;
     }
 }

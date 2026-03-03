@@ -49,7 +49,7 @@ fi
 print_success "Built tweak"
 
 print_status "Downloading IPA icons..."
-curl -L -o ipa-icons.zip https://raw.githubusercontent.com/pyoncord/assets/main/ipa-icons.zip
+curl -L -o ipa-icons.zip https://raw.githubusercontent.com/dissonance/assets/main/ipa-icons.zip
 
 if [ $? -ne 0 ]; then
     print_error "Failed to download IPA icons"
@@ -58,7 +58,7 @@ fi
 print_success "Downloaded IPA icons"
 
 print_status "Downloading patcher..."
-curl -L -o patcher https://github.com/amsyarasyiq/bunny-ipa-patcher/releases/download/release-pyon/patcher.mac-amd64
+curl -L -o patcher https://github.com/amsyarasyiq/dissonance-ipa-patcher/releases/download/release-dissonance/patcher.mac-amd64
 chmod +x patcher
 
 if [ $? -ne 0 ]; then
